@@ -1,0 +1,23 @@
+    <monitor>
+        <name>C3P0Monitor</name>
+        <type>managed</type>
+        <description>C3P0 monitor</description>
+        <monitor-configuration></monitor-configuration>
+        <monitor-run-task>
+                <execution-style>periodic</execution-style>
+                <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
+                <name>C3P0 Monitor Run Task</name>
+                <display-name>C3P0 Monitor Task</display-name>
+                <description>C3P0 Monitor Task</description>
+                <type>java</type>
+                <execution-timeout-in-secs>60</execution-timeout-in-secs>
+                <task-arguments>
+                    <!-- config file-->
+                    <argument name="config-file" is-required="true" default-value="monitors/C3P0Monitor/config.yml" />
+                </task-arguments>
+                <java-task>
+                        <classpath>c3p0-monitoring-extension.jar</classpath>
+                        <impl-class>com.appdynamics.extensions.c3p0.C3P0Monitor</impl-class>
+                </java-task>
+        </monitor-run-task>
+</monitor>

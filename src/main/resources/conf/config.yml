@@ -1,0 +1,20 @@
+# Tomcat instance particulars
+
+server:
+    host: "localhost"
+    port: 9044
+    username: ""
+    password: ""
+
+# Tomcat MBeans
+mbeans:
+    domainName: "com.mchange.v2.c3p0"
+    types: [z8kfsx943ubbqvtd3n7l|38e610e9]
+
+    # Uses regular expressions to match the pattern
+    excludePatterns: [.*AllIdentityTokenized$, .*AllPooledDataSources$]
+        
+
+#prefix used to show up metrics in AppDynamics
+metricPrefix:  "Custom Metrics|C3P0|"
+
