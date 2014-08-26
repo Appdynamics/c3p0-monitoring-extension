@@ -21,7 +21,7 @@ import java.util.Set;
 public class MBeanData {
 
 	private String domainName;
-	private Set<String> types = new HashSet<String>();
+	private Set<String> excludePooledDataSources = new HashSet<String>();
 	private Set<String> excludePatterns = new HashSet<String>();
 
 	public String getDomainName() {
@@ -32,12 +32,12 @@ public class MBeanData {
 		this.domainName = domainName;
 	}
 
-	public Set<String> getTypes() {
-		return types;
+	public Set<String> getExcludePooledDataSources() {
+		return excludePooledDataSources;
 	}
 
-	public void setTypes(Set<String> types) {
-		this.types = types;
+	public void setExcludePooledDataSources(Set<String> excludePooledDataSources) {
+		this.excludePooledDataSources = excludePooledDataSources;
 	}
 
 	public Set<String> getExcludePatterns() {

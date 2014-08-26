@@ -35,6 +35,7 @@ import com.appdynamics.extensions.c3p0.config.MBeanData;
 import com.appdynamics.extensions.c3p0.config.Server;
 import com.appdynamics.extensions.jmx.JMXConnectionConfig;
 import com.appdynamics.extensions.jmx.JMXConnectionUtil;
+import com.appdynamics.extensions.util.MetricUtils;
 import com.google.common.base.Strings;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -44,7 +45,6 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 
 public class C3P0Monitor extends AManagedMonitor {
 
-	private static final String POOLED_DATA_SOURCE = "PooledDataSource";
 	public static final Logger logger = Logger.getLogger("com.singularity.extensions.C3P0Monitor");
 	public static final String METRICS_SEPARATOR = "|";
 	private static final String CONFIG_ARG = "config-file";
@@ -115,7 +115,7 @@ public class C3P0Monitor extends AManagedMonitor {
 							if (attribute != null && attribute instanceof Number) {
 								String metricKey = getMetricsKey(objectName, attr);
 								if (!isKeyExcluded(metricKey, excludePatterns)) {
-									String attrStrValue = convertMetricValuesToString(attribute);
+									String attrStrValue = MetricUtils.toWholeNumberString(attribute);
 									metrics.put(metricKey, attrStrValue);
 								} else {
 									if (logger.isDebugEnabled()) {
@@ -129,16 +129,6 @@ public class C3P0Monitor extends AManagedMonitor {
 			}
 		}
 		return metrics;
-	}
-
-	private String convertMetricValuesToString(Object attribute) {
-		if (attribute instanceof Double) {
-			return String.valueOf(Math.round((Double) attribute));
-		} else if (attribute instanceof Float) {
-			return String.valueOf(Math.round((Float) attribute));
-		} else {
-			return attribute.toString();
-		}
 	}
 
 	private boolean isKeyExcluded(String metricKey, Set<String> excludePatterns) {
@@ -155,22 +145,28 @@ public class C3P0Monitor extends AManagedMonitor {
 	}
 
 	private boolean isDomainAndKeyPropertyConfigured(JMXConnectionUtil jmxConnector, ObjectName objectName, MBeanData mbeanData) {
+		// Matches for domain name specified in config.yml 
 		String domain = objectName.getDomain();
-		String keyProperty = objectName.getKeyProperty("type");
-		if(C3P0MonitorConstants.C3P0_REGISTRY.equals(keyProperty)) {
+		if (!mbeanData.getDomainName().equals(domain)) {
+			return false;
+		}
+		// Passes for type=C3P0Registry, the mbean with statistics for the library
+		String keyProperty = objectName.getKeyProperty(C3P0MonitorConstants.TYPE);
+		if (C3P0MonitorConstants.C3P0_REGISTRY.equals(keyProperty)) {
 			return true;
 		}
+		// checks for pooled data sources with dataSourceName and excludes those specified in config.yml
 		String dataSource = null;
-		if(keyProperty != null && keyProperty.startsWith(POOLED_DATA_SOURCE)) {
-			dataSource = (String) jmxConnector.getMBeanAttribute(objectName, "dataSourceName");
+		if (keyProperty != null && keyProperty.startsWith(C3P0MonitorConstants.POOLED_DATA_SOURCE)) {
+			dataSource = (String) jmxConnector.getMBeanAttribute(objectName, C3P0MonitorConstants.DATA_SOURCE_NAME);
 		}
-		Set<String> types = mbeanData.getTypes();
-		boolean configured = mbeanData.getDomainName().equals(domain) && types.contains(dataSource);
-		return configured;
+		Set<String> excludePooledDataSources = mbeanData.getExcludePooledDataSources();
+		boolean exclude = excludePooledDataSources.contains(dataSource);
+		return !exclude;
 	}
 
 	private String getMetricsKey(ObjectName objectName, MBeanAttributeInfo attr) {
-		String type = objectName.getKeyProperty("type");
+		String type = objectName.getKeyProperty(C3P0MonitorConstants.TYPE);
 
 		StringBuilder metricsKey = new StringBuilder();
 		metricsKey.append(Strings.isNullOrEmpty(type) ? "" : type + METRICS_SEPARATOR);

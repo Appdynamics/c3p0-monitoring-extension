@@ -1,15 +1,20 @@
-# Tomcat instance particulars
-
+# Server hosting the C3P0 application specifics
 server:
     host: "localhost"
     port: 9044
     username: ""
     password: ""
 
-# Tomcat MBeans
+# C3P0 register MBeans one with statistics about the library as a whole (called C3P0Registry),
+# and an MBean for each PooledDataSource you deploy. By default, this extension captures metrics for C3P0Registry.
+# Specify the dataSourceName of PooledDataSource in excludePooledDataSources to exclude from capturing metrics.
+# Ex: PooledDataSource[z8kfsx943ubbqvtd3n7l|38e610e9]
+# excludePooledDataSources: [z8kfsx943ubbqvtd3n7l|38e610e9]
+
 mbeans:
     domainName: "com.mchange.v2.c3p0"
-    types: [z8kfsx943ubbqvtd3n7l|38e610e9]
+    
+    excludePooledDataSources: []
 
     # Uses regular expressions to match the pattern
     excludePatterns: [.*AllIdentityTokenized$, .*AllPooledDataSources$]
